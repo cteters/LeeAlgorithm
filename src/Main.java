@@ -124,7 +124,7 @@ class Main
                     // mark next cell as visited and enqueue it
                     visited[i + row[k]][j + col[k]] = true;
                     q.add(new Node(i + row[k], j + col[k], dist + 1));
-
+/*
                     int length = ((ArrayDeque<Node>) q).getLast().x;
                     int width = ((ArrayDeque<Node>) q).getLast().y;
 
@@ -158,9 +158,35 @@ class Main
                             }
                         }
                     }
+*/
                 }
             }
         }
+
+
+        Node rear = ((ArrayDeque<Node>) backupQ).pollLast();
+        Node prev = ((ArrayDeque<Node>) backupQ).pollLast();
+
+        System.out.println("foo");
+        while (!backupQ.isEmpty()){
+
+           if
+           (
+                (rear.x == prev.x || rear.x == prev.x -1 || rear.x == prev.x+1)
+               &&
+                (rear.y == prev.y || rear.y == prev.y -1 || rear.y == prev.y+1)
+           ) {
+               matRoute[prev.x][prev.y] = 128;
+               rear = prev;
+           }
+
+           prev = ((ArrayDeque<Node>) backupQ).pollLast();
+
+           //System.out.println("stuff");
+        }
+
+
+
 
 
        return matRoute;
@@ -225,10 +251,19 @@ class Main
         return min_dist;
     }
 
+    private static int [][] path(int mat[][], int M, int N)
+    {
+
+
+
+
+        return mat;
+    }
+
     // Shortest path in a Maze
     public static void main(String[] args) throws IOException
     {
-       String imageName = "combo400";
+       String imageName = "perfect2k";
 
         if(imageName.charAt(imageName.length()-4) != '.')
             imageName = imageName + ".png";
@@ -263,7 +298,17 @@ class Main
         }
 
         System.out.println("\n\nMapping the actual route...");
+
+
+
+
         maze = BFS(maze, 0, 0, maze.length-1, maze.length-1, M, N, maxDist);
+
+        maze = path(maze, M,N);
+
+
+
+
 
         for(int i = 0; i < maze.length; i++)
             for(int j = 0; j < maze.length; j++)
