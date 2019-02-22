@@ -124,41 +124,6 @@ class Main
                     // mark next cell as visited and enqueue it
                     visited[i + row[k]][j + col[k]] = true;
                     q.add(new Node(i + row[k], j + col[k], dist + 1));
-/*
-                    int length = ((ArrayDeque<Node>) q).getLast().x;
-                    int width = ((ArrayDeque<Node>) q).getLast().y;
-
-                    if(length > 0 && width > 0){
-                        if(length+1 < M && width +1 < N) {
-                            if (matRoute[length - 1][width] +
-                                    matRoute[length + 1][width] +
-                                    matRoute[length][width - 1] +
-                                    matRoute[length][width + 1] > 2) {
-                                int endCheck = endDist(mat, length, width, x, y, M, N);
-                                if (endCheck + ((ArrayDeque<Node>) q).getLast().dist == maxDist)
-                                    matRoute[length][width] = 128;
-                            }
-                        }
-                    }
-                    else if(length == 0){
-                       if(width +1 < N) {
-                           if (matRoute[length][width -1] + matRoute[length][width +1] + matRoute[length+1][width] > 2) {
-                               int endCheck = endDist(mat, length, width, x, y, M, N);
-                               if (endCheck + ((ArrayDeque<Node>) q).getLast().dist == maxDist)
-                                   matRoute[length][width] = 128;
-                           }
-                       }
-                    }
-                    else if(width == 0){
-                        if(length +1 < M) {
-                            if (matRoute[length-1][width] + matRoute[length+1][width] + matRoute[length][width+1] > 2) {
-                                int endCheck = endDist(mat, length, width, x, y, M, N);
-                                if (endCheck + ((ArrayDeque<Node>) q).getLast().dist == maxDist)
-                                    matRoute[length][width] = 128;
-                            }
-                        }
-                    }
-*/
                 }
             }
         }
@@ -167,22 +132,15 @@ class Main
         Node rear = ((ArrayDeque<Node>) backupQ).pollLast();
         Node prev = ((ArrayDeque<Node>) backupQ).pollLast();
 
-        System.out.println("foo");
         while (!backupQ.isEmpty()){
 
-           if
-           (
-                (rear.x == prev.x || rear.x == prev.x -1 || rear.x == prev.x+1)
-               &&
-                (rear.y == prev.y || rear.y == prev.y -1 || rear.y == prev.y+1)
-           ) {
-               matRoute[prev.x][prev.y] = 128;
-               rear = prev;
+           if (rear.x == prev.x || rear.y == prev.y) {
+               if (rear.x == prev.x - 1 || rear.x == prev.x + 1 || rear.y == prev.y - 1 || rear.y == prev.y + 1) {
+                   matRoute[prev.x][prev.y] = 128;
+                   rear = prev;
+               }
            }
-
            prev = ((ArrayDeque<Node>) backupQ).pollLast();
-
-           //System.out.println("stuff");
         }
 
 
@@ -251,14 +209,6 @@ class Main
         return min_dist;
     }
 
-    private static int [][] path(int mat[][], int M, int N)
-    {
-
-
-
-
-        return mat;
-    }
 
     // Shortest path in a Maze
     public static void main(String[] args) throws IOException
@@ -292,36 +242,30 @@ class Main
         if (maxDist >= 0) {
             System.out.print("The shortest path from source to destination " +
                     "has length of " + maxDist + " pixels.");
+
+            System.out.println("\n\nMapping the actual route...");
+
+
+            maze = BFS(maze, 0, 0, maze.length-1, maze.length-1, M, N, maxDist);
+
+            for(int i = 0; i < maze.length; i++)
+                for(int j = 0; j < maze.length; j++)
+                    if(maze[i][j] == 1)
+                        maze[i][j] = 255;
+
+            EasyBufferedImage bufferedImage = EasyBufferedImage.createImage(maze);
+            String name = "solution.png";
+            File myNewPNGFile = new File(name);
+            ImageIO.write(bufferedImage, "PNG", myNewPNGFile);
+
+            System.out.print("File highlighting the shortest path can be found at:");
+            System.out.print(System.getProperty("user.dir") + "/" + name);
         }
         else {
             System.out.print("Destination can't be reached from given source");
         }
 
-        System.out.println("\n\nMapping the actual route...");
 
-
-
-
-        maze = BFS(maze, 0, 0, maze.length-1, maze.length-1, M, N, maxDist);
-
-        maze = path(maze, M,N);
-
-
-
-
-
-        for(int i = 0; i < maze.length; i++)
-            for(int j = 0; j < maze.length; j++)
-                if(maze[i][j] == 1)
-                    maze[i][j] = 255;
-
-        EasyBufferedImage bufferedImage = EasyBufferedImage.createImage(maze);
-        String name = "solution.png";
-        File myNewPNGFile = new File(name);
-        ImageIO.write(bufferedImage, "PNG", myNewPNGFile);
-
-        System.out.print("File highlighting the shortest path can be found at:");
-        System.out.print(System.getProperty("user.dir") + "/" + name);
 
         System.out.println("\n\nFin~");
     }
