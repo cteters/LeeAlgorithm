@@ -4,6 +4,8 @@ import java.util.Queue;
 import java.io.File;
 import javax.imageio.ImageIO;
 
+import java.util.*;
+
 /**
  *   THE LEE ALGORITHM:
  *
@@ -40,11 +42,13 @@ class Node
     // (x, y) represents matrix cell coordinates
     // dist represent its minimum distance from the source
     int x, y, dist;
+    boolean start;
 
-    Node(int x, int y, int dist) {
+    Node(int x, int y, int dist, boolean start) {
         this.x = x;
         this.y = y;
         this.dist = dist;
+        this.start = start;
     }
 }
 
@@ -66,7 +70,7 @@ class Main
 
     // Find Shortest Possible Route in a matrix mat from source
     // cell (i, j) to destination cell (x, y)
-    private static int[][] BFS(int mat[][], int i, int j, int x, int y, int M, int N, int maxDist)
+    private static int[][] BFS(int mat[][], int i, int j, int x, int y, int M, int N)
     {
         // construct a matrix to keep track of visited cells
         boolean[][] visited = new boolean[M][N];
@@ -79,13 +83,10 @@ class Main
 
         // mark source cell as visited and enqueue the source node
         visited[i][j] = true;
-        q.add(new Node(i, j, 0));
+        q.add(new Node(i, j, 0, true));
 
         Queue<Node> backupQ = new ArrayDeque<>();
         matRoute[i][j] = 128;
-
-        // stores length of longest path from source to destination
-        int min_dist = Integer.MAX_VALUE;
 
         // run till queue is not empty
         while (!q.isEmpty())
@@ -94,11 +95,6 @@ class Main
            Node node = q.poll();
 
            backupQ.add(node);
-           Node prev;
-           if(node != null) {
-               prev = node;
-               backupQ.add(prev);
-           }
 
             // (i, j) represents current cell and dist stores its
             // minimum distance from the source
@@ -108,7 +104,6 @@ class Main
 
             // if destination is found, update min_dist and stop
             if (i == x && j == y){
-                min_dist = dist;
                 matRoute[i][j] = 128;
                 break;
             }
@@ -118,16 +113,17 @@ class Main
             for (int k = 0; k < 4; k++)
             {
                 // check if it is possible to go to position
-                // (i + row[k], j + col[k]) from current position
                 if (isValid(mat, visited, i + row[k], j + col[k], M, N))
                 {
                     // mark next cell as visited and enqueue it
                     visited[i + row[k]][j + col[k]] = true;
-                    q.add(new Node(i + row[k], j + col[k], dist + 1));
+
+                    //q.add(new Node(i + row[k], j + col[k], dist + 1));
+                    q.add(new Node(i + row[k], j + col[k], dist + 1, false));
+
                 }
             }
         }
-
 
         Node rear = ((ArrayDeque<Node>) backupQ).pollLast();
         Node prev = ((ArrayDeque<Node>) backupQ).pollLast();
@@ -137,17 +133,70 @@ class Main
            if (rear.x == prev.x || rear.y == prev.y) {
                if (rear.x == prev.x - 1 || rear.x == prev.x + 1 || rear.y == prev.y - 1 || rear.y == prev.y + 1) {
                    matRoute[prev.x][prev.y] = 128;
+                   // uncomment to see the coordinates of the route printed
+                   // System.out.println("(" + prev.x + " , " + prev.y + ")");
                    rear = prev;
                }
            }
            prev = ((ArrayDeque<Node>) backupQ).pollLast();
         }
 
+        return matRoute;
+    }
 
 
+    // Find Shortest Possible Route in a matrix mat from source
+    // cell (i, j) to destination cell (x, y)
+    private static Map<String, Node> BFS(int mat[][], int i, int j, int x, int y, int M, int N, int foo)
+    {
+        // construct a matrix to keep track of visited cells
+        boolean[][] visited = new boolean[M][N];
 
+        // construct a matrix to keep track of the route
+        Map<String, Node> closed = new HashMap<String, Node>();
 
-       return matRoute;
+        // create an empty queue
+        Queue<Node> q = new ArrayDeque<>();
+
+        // mark source cell as visited and enqueue the source node
+        visited[i][j] = true;
+        closed.put( Integer.toString(i) + " " + Integer.toString(j), new Node(i, j, 0, true) );
+        q.add(new Node(i, j, 0, true));
+
+        // run till queue is not empty
+        while (!q.isEmpty())
+        {
+            // Retrieves and removes the head of the queue represented by this deque
+            Node node = q.poll();
+
+            // (i, j) represents current cell and dist stores its
+            // minimum distance from the source
+            i = node.x;
+            j = node.y;
+            int dist = node.dist;
+
+            // check for all 4 possible movements from current cell
+            // and enqueue each valid movement
+            for (int k = 0; k < 4; k++)
+            {
+                // check if it is possible to go to position
+                if (isValid(mat, visited, i + row[k], j + col[k], M, N))
+                {
+                    // mark next cell as visited and enqueue it
+                    visited[i + row[k]][j + col[k]] = true;
+
+                     int tempI = i + row[k];
+                     int tempJ = j + col[k];
+
+                     //add next coordinates and current node to closed map
+                     closed.put(Integer.toString(tempI)+ " " + Integer.toString(tempJ), node);
+
+                    q.add(new Node(i + row[k], j + col[k], dist + 1, false));
+                }
+            }
+        }
+
+        return closed;
     }
 
     private static int endDist(int mat[][], int i, int j, int x, int y, int M, int N)
@@ -160,7 +209,7 @@ class Main
 
         // mark source cell as visited and enqueue the source node
         visited[i][j] = true;
-        q.add(new Node(i, j, 0));
+        q.add(new Node(i, j, 0, true));
 
         Queue<Node> backupQ = new ArrayDeque<>();
 
@@ -201,7 +250,7 @@ class Main
                 {
                     // mark next cell as visited and enqueue it
                     visited[i + row[k]][j + col[k]] = true;
-                    q.add(new Node(i + row[k], j + col[k], dist + 1));
+                    q.add(new Node(i + row[k], j + col[k], dist + 1, false));
                 }
             }
         }
@@ -239,19 +288,36 @@ class Main
         System.out.println("\nFinding the length to the shortest possible path...");
         int maxDist = endDist(maze, 0, 0, maze.length-1, maze.length-1, M, N);
 
+        long runTime = System.currentTimeMillis();
+
         if (maxDist >= 0) {
-            System.out.print("The shortest path from source to destination " +
+            System.out.print("The shortest path from start to finish " +
                     "has length of " + maxDist + " pixels.");
 
             System.out.println("\n\nMapping the actual route...");
 
+            // Uncomment to see a version of the code that uses hash maps
+            //Map<String, Node> shortestRoute = BFS(maze, 0, 0, maze.length-1, maze.length-1, M, N, 0);
+            //convertPath(M, N, shortestRoute, maze);
 
-            maze = BFS(maze, 0, 0, maze.length-1, maze.length-1, M, N, maxDist);
+            // Uncomment to see a version of this version of the code activated for solving the path
+            maze = BFS(maze, 0, 0, maze.length-1, maze.length-1, M, N);
+
+
+            System.out.print("\nThe run time to record the path took approximately ");
+            System.out.println((System.currentTimeMillis()-runTime)/1000 + " seconds.");
+
+            System.out.print("\nThe actual path is currently stored as a 2D array");
+            System.out.print(" and can be converted to an image, but this can take more than a minute");
+            System.out.print(" depending on the size of the array.");
+
+            System.out.println("\n\nConverting to image, please wait...\n");
 
             for(int i = 0; i < maze.length; i++)
                 for(int j = 0; j < maze.length; j++)
                     if(maze[i][j] == 1)
                         maze[i][j] = 255;
+
 
             EasyBufferedImage bufferedImage = EasyBufferedImage.createImage(maze);
             String name = "solution.png";
@@ -265,8 +331,32 @@ class Main
             System.out.print("Destination can't be reached from given source");
         }
 
-
-
         System.out.println("\n\nFin~");
+    }
+
+
+    public static int [][] convertPath(int M, int N, Map<String, Node> closed, int [][] mat ){
+
+        int [][] matRoute = mat;
+        //List<String> path = new ArrayList<String>();
+        String location = Integer.toString(M-1) + " " + Integer.toString(N-1);
+        Node node = closed.get(location);
+        //path.add(location);
+        //path.add(node.x + " " + node.y);
+
+        while(node.start != true) {
+            location = Integer.toString(node.x) + " " + Integer.toString(node.y);
+            node = closed.get(location);
+            //path.add(node.y + " " + node.x);
+            matRoute[node.x][node.y] = 128;
+        }
+
+        //Collections.reverse(path);
+
+        //System.out.print("The Path is: ");
+        //System.out.println(path);
+        //System.out.println("With a length of: " + path.size());
+
+        return matRoute;
     }
 }
